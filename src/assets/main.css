@@ -1,0 +1,29 @@
+@import './base.css';
+
+#app {
+  padding: 0;
+  margin: 0;
+  max-width: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 移除所有 PC 布局 */
+body {
+  display: block !important;
+}
+
+@media (min-width: 1024px) {
+  body {
+    display: block !important;
+  }
+
+  #app {
+    display: block !important;
+    grid-template-columns: none !important;
+    padding: 0;
+  }
+}
