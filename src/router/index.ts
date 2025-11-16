@@ -14,6 +14,11 @@ const router = createRouter({
       name: 'memory',
       component: () => import('../views/MemoryView.vue'),
     },
+    {
+      path: '/others',
+      name: 'others',
+      component: () => import('../views/Otherspage.vue'),
+    },
   ],
 })
 

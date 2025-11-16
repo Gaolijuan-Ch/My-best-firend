@@ -7,14 +7,10 @@
     <!-- <van-swipe class="my-swipe" autoplay="3000" indicator-color="pink">
       <van-swipe-item> </van-swipe-item>
     </van-swipe> -->
-
     <div class="card">
-      <h3> 过去的一年  你的每一个瞬间✨</h3>
+      <h3> 新的一岁，要对你说的✨</h3>
       <p></p>
     </div>
-    <img src="../assets/下一页.svg" alt="logo" style="width: 40px; height: 40px; position: absolute; bottom: 20px; right: 20px;" @click="goto" />
-
-    
   </div>
 </template>
 
@@ -24,11 +20,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const goBack = () => {
-  router.push('/')
-}
-
-const goto = () => {
-  router.push('/others')
+  router.push('/memory')
 }
 
 // const photos = [
@@ -39,11 +31,25 @@ const goto = () => {
 .memory-page {
   min-height: 100vh;
   padding: 22px;
-  background-image: url(../assets/蛋糕.jpg);
+  background-image: url(../assets/壁纸3.jpg);
   background-size: cover;
   background-position: center;
 }
 
+.card {
+  height: 620px;
+  text-align: center;
+  background: #fff;
+  margin-top: 20px;
+  color: #070707;
+  font-size: 15px;  
+  border-radius: 24px;
+  padding: 20px 20px;
+  box-shadow: 0 8px 32px rgba(227, 184, 197, 0.15);
+  text-align: center;
+  position: relative;
+ 
+}
 .title {
   font-size: 22px;
 
@@ -64,24 +70,7 @@ const goto = () => {
   object-fit: cover;
 }
 
-.card {
-  height: 620px;
-  text-align: center;
-  /* background: #fff; */
-  margin-top: 20px;
-  color: #ff5b9b;
-  font-size: 15px;  
-  /* 毛玻璃核心属性 */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px); 
-  border-radius: 24px;
-  padding: 20px 20px;
-  box-shadow: 0 8px 32px rgba(255, 100, 150, 0.15);
-  text-align: center;
-  position: relative;
-  /* 增加边框增强通透感（可选） */
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
+
 
 .back-btn {
   width: 100%;
