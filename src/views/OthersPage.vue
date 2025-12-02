@@ -1,7 +1,7 @@
 <template>
   <div class="memory-page">
     <div class="title">
-      <img src="../assets/hellokitty.svg" alt="logo" style="width: 70px; height: 70px; margin: 4px;" @click="goBack" title="点我返回上一页"/>
+      <img src="../assets/hellokitty3.svg" alt="logo" style="width: 70px; height: 70px; margin: 4px;" @click="goBack" title="点我返回上一页"/>
     </div>
     <!-- 轮播 -->
     <!-- <van-swipe class="my-swipe" autoplay="3000" indicator-color="pink">
