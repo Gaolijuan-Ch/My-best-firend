@@ -1,92 +1,137 @@
 <template>
   <div class="birthday-container">
     
-    <!-- ✨ 弹幕层 -->
-    <!-- v-show="showDanmaku" 控制显示隐藏 -->
-    <!-- pointer-events: none 保证弹幕不会挡住下面的点击操作 -->
-    <div class="danmaku-container" v-show="showDanmaku">
-      <div 
-        v-for="(item, index) in danmakuList" 
-        :key="index" 
-        class="danmaku-item"
-        :style="item.style"
-      >
-        {{ item.text }}
-      </div>
-    </div>
-
-    <!-- 主卡片内容 -->
-    <div class="card">
-      <h1 class="title">
-        🎂生日快乐🎂
-        <br />
-        &nbsp; 盼盼小宝宝！
-      </h1>
-
-      <p class="subtitle">
-        今天要开心到飞起来！
-        <br />
-        愿我们的友谊永远亮闪闪 ✨
-      </p>
-
-      <!-- 图片展示区 -->
-      <!-- 这里加了点击事件 @click="toggleDanmaku" -->
-      <div class="image-container" @click="toggleDanmaku">
-        <van-image
-          round
-          src="https://s3.bmp.ovh/imgs/2025/11/17/cdc65edaa0aa4dc5.png"
-          width="180px"
-          height="180px"
-          alt="生日蛋糕"
-          fit="cover"
-        />
-        <!-- 提示文字 -->
+    <!-- 🔒 锁定层 -->
+    <div v-if="!isUnlocked" class="lock-container">
+      <div class="lock-card">
+        <div class="lock-icon">🔒</div>
+        <h3>请输入生日密码</h3>
+        <p class="lock-hint">解锁查看给盼盼的惊喜</p>
         
+        <input 
+          type="tel" 
+          v-model="inputPassword" 
+          class="pwd-input" 
+          placeholder="请输入4位密码" 
+          maxlength="4"
+        />
+        
+        <van-button 
+          type="primary" 
+          round 
+          block 
+          class="unlock-btn" 
+          @click="checkPassword"
+        >
+          立即解锁
+        </van-button>
+        
+        <p v-if="showError" class="error-msg">密码错误，你不是米盼盼！！！🐷</p>
+      </div>
+    </div>
+
+    <!-- 🎉 解锁后的内容 -->
+    <template v-else>
+      <div class="danmaku-container" v-show="showDanmaku">
+        <div 
+          v-for="(item, index) in danmakuList" 
+          :key="index" 
+          class="danmaku-item"
+          :style="item.style"
+        >
+          {{ item.text }}
+        </div>
       </div>
 
-      <!-- 按钮区域 -->
-      <van-button type="primary" round class="main-btn" @click="goMemory">
-        💗 打开二十一岁的第一封信
-      </van-button>
-    </div>
+      <div class="card">
+        <h1 class="title">
+          🎂生日快乐🎂
+          <br />
+          &nbsp; 盼盼小宝宝！
+        </h1>
 
-    <!-- 底部装饰 -->
-    <div class="footer-decor">
-      <span>✨</span>
-      <span>💖</span>
-      <span>🎉</span>
-      <span>💝</span>
-      <span>✨</span>
-    </div>
+        <p class="subtitle">
+          今天要开心到飞起来！
+          <br />
+          愿我们的友谊永远亮闪闪 ✨
+        </p>
+
+        <div class="image-container" @click="toggleDanmaku">
+          <van-image
+            round
+            src="https://s3.bmp.ovh/imgs/2025/11/17/cdc65edaa0aa4dc5.png"
+            width="180px"
+            height="180px"
+            alt="生日蛋糕"
+            fit="cover"
+          />
+        </div>
+
+        <van-button type="primary" round class="main-btn" @click="goMemory">
+          💗 打开二十一岁的第一封信
+        </van-button>
+      </div>
+
+      <div class="footer-decor">
+        <span>✨</span>
+        <span>💖</span>
+        <span>🎉</span>
+        <span>💝</span>
+        <span>✨</span>
+      </div>
+    </template>
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import type { CSSProperties } from 'vue'
 
 const router = useRouter()
+const STORAGE_KEY = 'panpan_birthday_unlocked_v1' // 定义存储的key
 
-// 跳转到回忆页面
+// 1. 修改初始化逻辑：先检查 localStorage 是否有记录
+const isUnlocked = ref(localStorage.getItem(STORAGE_KEY) === 'true')
+
+const inputPassword = ref('') 
+const showError = ref(false) 
+
+const checkPassword = () => {
+  if (inputPassword.value === '1029') {
+    // 2. 密码正确，保存状态到 localStorage
+    isUnlocked.value = true
+    localStorage.setItem(STORAGE_KEY, 'true')
+    
+    // 立即初始化弹幕
+    initDanmaku() 
+  } else {
+    showError.value = true
+    inputPassword.value = '' 
+    
+    setTimeout(() => {
+      showError.value = false
+    }, 2000)
+  }
+}
+
 const goMemory = () => {
   router.push('/memory')
 }
 
-// --- 弹幕逻辑 ---
 interface DanmakuItem {
   text: string;
-  style: any;
+  style: CSSProperties;
 }
 
 const danmakuList = ref<DanmakuItem[]>([])
-const showDanmaku = ref(false) // 控制弹幕显示的开关
+const showDanmaku = ref(false) 
 
-// 切换弹幕显示状态
 const toggleDanmaku = () => {
   showDanmaku.value = !showDanmaku.value
 }
 
-// 弹幕文案库，你可以随意添加
 const texts = [
   "生日快乐 🎂", "天天开心 ✨", "暴富暴瘦 💰", "学业有成 📚", 
   "永远十八岁 🌸", "可可爱爱 🧸", "好运连连 🍀", "心想事成 🌟",
@@ -94,28 +139,29 @@ const texts = [
   "百事无忌 🧧", "万事胜意 🍊"
 ]
 
-onMounted(() => {
-  // 生成 25 条随机弹幕
+const initDanmaku = () => {
+  danmakuList.value = [] 
   for (let i = 0; i < 25; i++) {
-    const text = texts[Math.floor(Math.random() * texts.length)]
-    
+    const text = texts[Math.floor(Math.random() * (texts.length || 1))] || "默认祝福语"
     danmakuList.value.push({
       text: text,
       style: {
-        // 随机高度：只出现在屏幕上方 5% 到 45% 的位置
         top: `${5 + Math.random() * 40}%`, 
-        // 随机动画时长：6秒 到 14秒 之间，造成速度差异
         animationDuration: `${6 + Math.random() * 8}s`,
-        // 随机延迟：0秒 到 10秒 之间开始，避免同时出现
         animationDelay: `${Math.random() * 10}s`,
-        // 随机字体大小
         fontSize: `${14 + Math.random() * 22}px`,
-        // 随机颜色：白色或淡粉色
         color: Math.random() > 0.6 ? '#fff' : '#ff7db4',
-        // 随机透明度
         opacity: 0.7 + Math.random() * 0.3
       }
     })
+  }
+}
+
+onMounted(() => {
+  // 3. 如果已经是解锁状态，直接加载弹幕
+  // 如果是锁定状态，不需要加载，等用户点击解锁后再加载
+  if (isUnlocked.value) {
+    initDanmaku()
   }
 })
 </script>
@@ -132,8 +178,94 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   position: relative;
-  overflow: hidden; /* 防止弹幕飞出屏幕出现滚动条 */
+  overflow: hidden; 
 }
+
+.lock-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(15px);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lock-card {
+  width: 80%;
+  max-width: 320px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 30px 20px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.lock-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.lock-card h3 {
+  color: #ff5b9b;
+  margin: 0 0 5px;
+}
+
+.lock-hint {
+  color: #999;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.pwd-input {
+  width: 80%;
+  padding: 12px;
+  border: 2px solid #ffdeeb;
+  border-radius: 12px;
+  font-size: 18px;
+  text-align: center;
+  outline: none;
+  margin-bottom: 20px;
+  color: #ff5b9b;
+  letter-spacing: 4px;
+  transition: border-color 0.3s;
+}
+
+.pwd-input:focus {
+  border-color: #ff7eb8;
+}
+
+.unlock-btn {
+  background: linear-gradient(to right, #ff7eb8, #ff5b9b) !important;
+  border: none !important;
+  font-weight: bold;
+}
+
+.error-msg {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 15px;
+  animation: shake 0.5s;
+}
+
+/* 简单的弹窗进入动画 */
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* 错误时的抖动动画 */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
 
 /* --- 弹幕样式 --- */
 .danmaku-container {
@@ -141,19 +273,19 @@ onMounted(() => {
   top: 0;
   left: 0;
   width: 100%;
-  height: 50%; /* 占据上部空间 */
-  pointer-events: none; /* 关键：让鼠标点击能穿透弹幕层，不影响下面按钮 */
+  height: 50%; 
+  pointer-events: none; 
   z-index: 10;
   overflow: hidden;
 }
 
 .danmaku-item {
   position: absolute;
-  white-space: nowrap; /* 不换行 */
-  left: 100%; /* 初始位置在屏幕右侧外面 */
+  white-space: nowrap; 
+  left: 100%; 
   font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* 文字阴影让弹幕更清晰 */
-  animation: moveLeft linear infinite; /* 无限循环滚动 */
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3); 
+  animation: moveLeft linear infinite; 
 }
 
 @keyframes moveLeft {
@@ -161,7 +293,6 @@ onMounted(() => {
     transform: translateX(0);
   }
   to {
-    /* 移动到屏幕左侧很远的地方，确保完全移出 */
     transform: translateX(-150vw); 
   }
 }
@@ -178,10 +309,10 @@ onMounted(() => {
   padding: 20px 20px;
   box-shadow: 0 8px 32px rgba(255, 100, 150, 0.15);
   text-align: center;
-  margin-top: 100px; /* 稍微调整一下位置 */
+  margin-top: 100px; 
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  z-index: 5; /* 确保卡片在背景之上 */
+  z-index: 5; 
 }
 
 /* 文本样式 */
@@ -203,11 +334,10 @@ onMounted(() => {
 /* 图片容器 */
 .image-container {
   margin: 20px 0 30px;
-  cursor: pointer; /* 鼠标变为手型 */
-  transition: transform 0.2s; /* 点击时的缩放动画 */
+  cursor: pointer; 
+  transition: transform 0.2s; 
 }
 
-/* 点击时的按压效果 */
 .image-container:active {
   transform: scale(0.95);
 }

@@ -1,13 +1,17 @@
 <template>
   <div class="memory-page">
+    <audio ref="audioRef" :src="bgmUrl" loop></audio>
+    <div class="music-btn" @click="toggleMusic" :class="{ 'playing': isMusicPlaying }">
+      <span>🎵</span>
+    </div>
+
     <!-- 顶部导航 -->
     <div class="title-bar">
       <img src="../assets/hellokitty.svg" alt="logo" class="nav-icon" @click="goBack" title="返回上一页"/>
-    
     </div>
 
     <div class="card">
-      <h3>✨ 照片墙 ✨</h3>
+      <h3>✨ 照片照片照片✨</h3>
       
       <!-- 照片展示区 -->
       <div class="photo-frame">
@@ -25,15 +29,13 @@
             />
           </transition>
         </div>
-
-        
       </div>
 
       <!-- 控制区 -->
       <div class="controls">
         <!-- 播放/暂停按钮 -->
         <button class="play-btn" @click="togglePlay">
-          {{ isPlaying ? '暂停啦' : '▶开始播放' }}
+          {{ isSlidePlaying ? '暂停啦' : '▶开始播放' }}
         </button>
 
         <!-- 进度条 -->
@@ -45,7 +47,7 @@
             :max="totalImages - 1" 
             v-model.number="currentIndex" 
             class="timeline-slider"
-            @input="pause"
+            @input="pauseSlide"
           >
           <span class="time-label">Now</span>
         </div>
@@ -61,30 +63,43 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import bgmUrl from '../assets/生日快乐歌.mp4'
 
 const router = useRouter()
+const audioRef = ref<HTMLAudioElement | null>(null)
+const isMusicPlaying = ref(false)
 
+const toggleMusic = () => {
+  if (!audioRef.value) return
+  if (isMusicPlaying.value) {
+    audioRef.value.pause()
+    isMusicPlaying.value = false
+  } else {
+    audioRef.value.volume = 0.5 
+    audioRef.value.play().then(() => {
+      isMusicPlaying.value = true
+    }).catch(err => {
+      console.log('播放失败，可能需要用户交互:', err)
+    })
+  }
+}
 
+// --- 幻灯片逻辑 ---
 const currentIndex = ref(0)
-const isPlaying = ref(false)
+const isSlidePlaying = ref(false) 
 const loading = ref(true)
 let timer: number | null = null 
 
-// 1. 动态导入图片 (关键步骤)
-// 使用 Vite 的 glob 导入 assets 目录下所有以 "图片" 开头的文件 (jpg/png等)
-// eager: true 表示直接获取模块，而不是异步加载
+
 const imageModules = import.meta.glob('../assets/图片*.*', { eager: true })
 
 // 2. 处理图片列表并排序
 const images = Object.keys(imageModules)
   .map((path) => {
-    // 获取模块 default 导出 (即图片路径)
     // @ts-ignore
     return imageModules[path].default
   })
   .sort((a, b) => {
-    // 提取文件名中的数字进行自然排序 (例如: 图片2 应在 图片10 前面)
-    // 假设路径类似于 /src/assets/图片1.jpg
     const getNum = (str: string) => {
       const match = str.match(/图片(\d+)/);
       return match ? parseInt(match[1]) : 0;
@@ -99,42 +114,57 @@ const currentImage = computed(() => images[currentIndex.value])
 onMounted(() => {
   if (images.length > 0) {
     loading.value = false
-    // 可选：进来自动播放，如果想自动播，把下面这行注释解开
-    // startPlay() 
+  }
+  
+  // 🎵 尝试自动播放音乐
+  if (audioRef.value) {
+    audioRef.value.volume = 0.5
+    // 浏览器的策略：通常需要用户产生交互（点击过页面）才能自动播放有声媒体
+    // 我们尝试直接播放
+    audioRef.value.play().then(() => {
+      isMusicPlaying.value = true
+    }).catch(() => {
+      console.log('自动播放被拦截，等待用户点击')
+      document.addEventListener('click', () => {
+        if (!isMusicPlaying.value && audioRef.value) {
+          audioRef.value.play()
+          isMusicPlaying.value = true
+        }
+      }, { once: true })
+    })
   }
 })
 
 onUnmounted(() => {
-  pause()
+  pauseSlide()
+  if (audioRef.value) {
+    audioRef.value.pause()
+  }
 })
 
-// --- 控制功能 ---
 
 const togglePlay = () => {
-  if (isPlaying.value) {
-    pause()
+  if (isSlidePlaying.value) {
+    pauseSlide()
   } else {
-    startPlay()
+    startSlide()
   }
 }
 
-const startPlay = () => {
+const startSlide = () => {
   if (timer) return
-  isPlaying.value = true
-  // 每 1.2 秒切换一张
+  isSlidePlaying.value = true
   timer = setInterval(() => {
     if (currentIndex.value < totalImages.value - 1) {
       currentIndex.value++
     } else {
-      // 播放完回到第一张，并暂停（或者你想循环播放就注释掉 pause）
       currentIndex.value = 0 
-      // pause() 
     }
   }, 1200)
 }
 
-const pause = () => {
-  isPlaying.value = false
+const pauseSlide = () => {
+  isSlidePlaying.value = false
   if (timer) {
     clearInterval(timer)
     timer = null
@@ -159,6 +189,38 @@ const goto = () => router.push('/others')
   flex-direction: column;
 }
 
+/* 🎵 音乐按钮样式 */
+.music-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  font-size: 20px;
+}
+
+/* 旋转动画：只有当 .playing 类存在时才旋转 */
+.playing {
+  animation: rotate 3s linear infinite;
+  background: rgba(255, 222, 235, 0.6); /* 播放时变粉一点 */
+  border-color: #ff7eb8;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* 顶部导航优化 */
 .title-bar {
   display: flex;
@@ -177,20 +239,11 @@ const goto = () => router.push('/others')
   transform: scale(0.9);
 }
 
-.page-title {
-  color: #fff;
-  font-weight: bold;
-  font-size: 18px;
-  margin-left: 10px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
 /* 卡片样式优化 */
 .card {
-  /* 高度自适应，但给个最小高度 */
   flex: 1;
   max-height: 700px;
-  background: rgba(255, 255, 255, 0.25); /* 稍微调高一点透明度让图片更清晰 */
+  background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px); 
   border-radius: 24px;
@@ -203,7 +256,7 @@ const goto = () => router.push('/others')
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
-  margin-bottom: 60px; /* 留出底部按钮位置 */
+  margin-bottom: 60px;
 }
 
 h3 {
@@ -219,12 +272,12 @@ h3 {
 .photo-frame {
   width: 100%;
   max-width: 320px;
-  aspect-ratio: 3/4; /* 保持一个长宽比，如果是横图较多可以改成 4/3 */
+  aspect-ratio: 3/4;
   background: #fff;
-  padding: 10px 10px 35px 10px; /* 底部留白像拍立得 */
+  padding: 10px 10px 35px 10px;
   border-radius: 4px;
   box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-  transform: rotate(-2deg); /* 微微倾斜增加俏皮感 */
+  transform: rotate(-2deg);
   transition: transform 0.3s;
   position: relative;
   margin: 10px 0;
@@ -247,23 +300,8 @@ h3 {
 .memory-photo {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* 保证图片填满 */
+  object-fit: cover;
   display: block;
-}
-
-.timestamp {
-  position: absolute;
-  bottom: 6px;
-  left: 0;
-  width: 100%;
-  text-align: center;
-  color: #666;
-  font-family: 'Courier New', Courier, monospace; /* 打印机字体 */
-  font-size: 12px;
-  display: flex;
-  justify-content: space-between;
-  padding: 0 14px;
-  box-sizing: border-box;
 }
 
 /* 控制区 */
