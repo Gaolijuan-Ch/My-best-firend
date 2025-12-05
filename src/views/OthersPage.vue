@@ -58,7 +58,7 @@ const fullText = [
 .message-page {
   min-height: 100vh;
   padding: 20px;
-  background-image: url(../assets/壁纸3.jpg);
+  background-image: url(../assets/b3.jpg);
   background-size: cover;
   background-position: center;
   display: flex;

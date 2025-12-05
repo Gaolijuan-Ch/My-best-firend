@@ -171,7 +171,7 @@ onMounted(() => {
 .birthday-container {
   min-height: 100vh;
   padding: 20px;
-  background-image: url(../assets/壁纸4.jpg);
+  background-image: url(../assets/b4.jpg);
   background-size: cover;
   background-position: center;
   display: flex;

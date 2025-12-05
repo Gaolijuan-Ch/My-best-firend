@@ -56,14 +56,14 @@
       <p class="subtitle">可以拖动我哦</p>
     </div>
 
-    <img src="../assets/下一页.svg" alt="next" class="next-btn" @click="goto" />
+    <img src="../assets/next.svg" alt="next" class="next-btn" @click="goto" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import bgmUrl from '../assets/生日快乐歌.mp4'
+import bgmUrl from '../assets/bgm.mp4'
 
 const router = useRouter()
 const audioRef = ref<HTMLAudioElement | null>(null)
@@ -91,7 +91,7 @@ const loading = ref(true)
 let timer: number | null = null 
 
 
-const imageModules = import.meta.glob('../assets/图片*.*', { eager: true })
+const imageModules = import.meta.glob('../assets/p*.*', { eager: true })
 
 // 2. 处理图片列表并排序
 const images = Object.keys(imageModules)
@@ -101,7 +101,7 @@ const images = Object.keys(imageModules)
   })
   .sort((a, b) => {
     const getNum = (str: string) => {
-      const match = str.match(/图片(\d+)/);
+      const match = str.match(/p(\d+)/);
       return match ? parseInt(match[1]) : 0;
     };
     return getNum(a) - getNum(b);
@@ -180,7 +180,7 @@ const goto = () => router.push('/others')
 .memory-page {
   min-height: 100vh;
   padding: 22px;
-  background-image: url(../assets/蛋糕.jpg);
+  background-image: url(../assets/cake.jpg);
   background-size: cover;
   background-position: center;
   position: relative;
