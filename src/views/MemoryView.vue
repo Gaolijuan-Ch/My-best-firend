@@ -5,7 +5,6 @@
       <span>🎵</span>
     </div>
 
-    <!-- 顶部导航 -->
     <div class="title-bar">
       <img src="../assets/hellokitty.svg" alt="logo" class="nav-icon" @click="goBack" title="返回上一页"/>
     </div>
@@ -13,12 +12,9 @@
     <div class="card">
       <h3>✨ 照片照片照片✨</h3>
       
-      <!-- 照片展示区 -->
       <div class="photo-frame">
-        <!-- 加载中提示 -->
         <div v-if="loading" class="loading-text">正在打开时光胶囊...</div>
         
-        <!-- 图片显示 -->
         <div v-else class="image-container" @click="togglePlay">
           <transition name="fade" mode="out-in">
             <img 
@@ -31,14 +27,11 @@
         </div>
       </div>
 
-      <!-- 控制区 -->
       <div class="controls">
-        <!-- 播放/暂停按钮 -->
         <button class="play-btn" @click="togglePlay">
           {{ isSlidePlaying ? '暂停啦' : '▶开始播放' }}
         </button>
 
-        <!-- 进度条 -->
         <div class="slider-container">
           <span class="time-label">Start</span>
           <input 
@@ -63,7 +56,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import bgmUrl from '../assets/bgm.mp4'
+import bgmUrl from '../assets/songs.mp3'
 
 const router = useRouter()
 const audioRef = ref<HTMLAudioElement | null>(null)
@@ -90,31 +83,23 @@ const isSlidePlaying = ref(false)
 const loading = ref(true)
 let timer: number | null = null 
 
+// *** 修改部分开始：直接生成 MinIO URL 列表 ***
+// 这里的逻辑已改为从 p1.jpg 生成到 p24.jpg
+const images: string[] = []
+const baseUrl = 'http://43.138.85.114:9000/mipanpan/'
 
-const imageModules = import.meta.glob('../assets/p*.*', { eager: true })
-
-// 2. 处理图片列表并排序
-const images = Object.keys(imageModules)
-  .map((path) => {
-    // @ts-ignore
-    return imageModules[path].default
-  })
-  .sort((a, b) => {
-    const getNum = (str: string) => {
-      const match = str.match(/p(\d+)/);
-      return match ? parseInt(match[1]) : 0;
-    };
-    return getNum(a) - getNum(b);
-  });
+for (let i = 1; i <= 24; i++) {
+  images.push(`${baseUrl}p${i}.jpg`)
+}
+// *** 修改部分结束 ***
 
 const totalImages = computed(() => images.length)
 const currentImage = computed(() => images[currentIndex.value])
 
 // 初始化
 onMounted(() => {
-  if (images.length > 0) {
-    loading.value = false
-  }
+  // 因为是 URL 字符串列表，不需要等待 import，直接设为加载完成
+  loading.value = false
   
   // 🎵 尝试自动播放音乐
   if (audioRef.value) {
