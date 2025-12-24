@@ -117,6 +117,8 @@ const checkPassword = () => {
 }
 
 const goMemory = () => {
+  console.log("11111");
+  
   router.push('/memory')
 }
 
