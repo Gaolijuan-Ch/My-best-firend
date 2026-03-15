@@ -41,7 +41,7 @@ const router = useRouter()
 const goBack = () => {
   router.push('/memory')
 }
-
+console.log('测试提交')
 // 完整的信件内容，按段落存储
 // \n 代表换行
 const fullText = [
